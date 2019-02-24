@@ -10,6 +10,24 @@ public class Message implements Parcelable {
     String body;
     String sender;
     Date date;
+    int type;
+    String group;
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
 
     public String getBody() {
         return body;
@@ -38,6 +56,10 @@ public class Message implements Parcelable {
     public Message() {
     }
 
+    public Message(String group) {
+        this.group = group;
+        this.type = 1;
+    }
 
     @Override
     public int describeContents() {
@@ -49,6 +71,8 @@ public class Message implements Parcelable {
         dest.writeString(this.body);
         dest.writeString(this.sender);
         dest.writeLong(this.date != null ? this.date.getTime() : -1);
+        dest.writeInt(this.type);
+        dest.writeString(this.group);
     }
 
     protected Message(Parcel in) {
@@ -56,6 +80,8 @@ public class Message implements Parcelable {
         this.sender = in.readString();
         long tmpDate = in.readLong();
         this.date = tmpDate == -1 ? null : new Date(tmpDate);
+        this.type = in.readInt();
+        this.group = in.readString();
     }
 
     public static final Creator<Message> CREATOR = new Creator<Message>() {
