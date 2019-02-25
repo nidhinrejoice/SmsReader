@@ -99,6 +99,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             tvTime.setText(Utils.getMins(message.getDate()));
             if (anim) {
                 YoYo.with(Techniques.Pulse).delay(600).duration(400).playOn(root);
+                animate=false;
             }
             if (message.getType() == 0)
                 root.setOnClickListener(v -> mMessageInterface.onMessageClicked(message));

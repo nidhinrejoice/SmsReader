@@ -31,7 +31,7 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
                     smsSender = smsMessage.getDisplayOriginatingAddress();
                     smsBody += smsMessage.getMessageBody();
                 }
-                showNotification(context, smsSender, j++);
+                showNotification(context, smsSender,smsBody, j++);
             } else {
                 Bundle smsBundle = intent.getExtras();
                 if (smsBundle != null) {
@@ -46,7 +46,7 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
                         messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                         smsBody += messages[i].getMessageBody();
                     }
-                    showNotification(context, smsSender, messages.length-1);
+                    showNotification(context, smsSender, smsBody,messages.length-1);
                     smsSender = messages[0].getOriginatingAddress();
                 }
             }
@@ -54,10 +54,11 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    void showNotification(Context context, String sender, int id) {
+    void showNotification(Context context, String sender,String message, int id) {
         String CHANNEL_ID = "sms_reader";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentTitle("New SMS from " + sender)
+                .setContentTitle( sender)
+                .setContentText(message)
                 .setSmallIcon(R.drawable.ic_account);
         String name = "SMS Reader";
         NotificationManager mNotificationManager =
