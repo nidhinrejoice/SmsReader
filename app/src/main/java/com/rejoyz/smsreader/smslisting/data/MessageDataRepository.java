@@ -30,6 +30,7 @@ public class MessageDataRepository implements MessageRespository {
 
     public List<Message> fetchInboxSms(int type) {
         List<Message> smsInbox = new ArrayList<Message>();
+        List<Message> lastHourMessages = new ArrayList<Message>();
         List<Message> oneHourMessages = new ArrayList<Message>();
         List<Message> twoHourMessages = new ArrayList<Message>();
         List<Message> threeHourMessages = new ArrayList<Message>();
@@ -39,7 +40,7 @@ public class MessageDataRepository implements MessageRespository {
 
         Uri uriSms = Uri.parse("content://sms/inbox");
 
-        String filter = "date>=" + (Calendar.getInstance().getTime().getTime() - 864000000);//filtering messages beyond 24 hours
+        String filter = "date>=" + (Calendar.getInstance().getTime().getTime() - 86400000);//filtering messages beyond 24 hours
         Cursor cursor = mContext.getContentResolver()
                 .query(uriSms,
                         new String[]{"_id", "address", "date", "body",
@@ -58,15 +59,19 @@ public class MessageDataRepository implements MessageRespository {
                     message.setDate(new Date(cursor.getLong(cursor
                             .getColumnIndex("date"))));
 
-                    if (Utils.getHoursAgo(message.getDate()) <= 1) {
+                    if (Utils.getHoursAgo(message.getDate()) == 0) {
+                        if (lastHourMessages.isEmpty())
+                            lastHourMessages.add(new Message("Last hour"));
+                        lastHourMessages.add(message);
+                    } else if (Utils.getHoursAgo(message.getDate()) == 1) {
                         if (oneHourMessages.isEmpty())
                             oneHourMessages.add(new Message("One hour ago"));
                         oneHourMessages.add(message);
-                    } else if (Utils.getHoursAgo(message.getDate()) <= 2) {
+                    } else if (Utils.getHoursAgo(message.getDate()) == 2) {
                         if (twoHourMessages.isEmpty())
                             twoHourMessages.add(new Message("2 hours ago"));
                         twoHourMessages.add(message);
-                    } else if (Utils.getHoursAgo(message.getDate()) <= 3) {
+                    } else if (Utils.getHoursAgo(message.getDate()) == 3) {
                         if (threeHourMessages.isEmpty())
                             threeHourMessages.add(new Message("3 hours ago"));
                         threeHourMessages.add(message);
@@ -87,6 +92,7 @@ public class MessageDataRepository implements MessageRespository {
                 } while (cursor.moveToPrevious());
             }
         }
+        smsInbox.addAll(lastHourMessages);
         smsInbox.addAll(oneHourMessages);
         smsInbox.addAll(twoHourMessages);
         smsInbox.addAll(threeHourMessages);

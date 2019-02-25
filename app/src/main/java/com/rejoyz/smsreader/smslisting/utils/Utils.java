@@ -15,7 +15,6 @@ public class Utils {
         Date now = Calendar.getInstance().getTime();
         long timeDifference = now.getTime() - date.getTime();
         long hours = timeDifference / 3600000;
-        hours += timeDifference % 3600000 > 1 ? 1 : 0;
         return hours;
     }
 

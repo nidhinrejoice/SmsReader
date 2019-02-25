@@ -11,3 +11,5 @@
 /build
 /captures
 .externalNativeBuild
+app/release/smsreader.apk
+app/release/output.json

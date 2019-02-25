@@ -1,11 +1,14 @@
 package com.rejoyz.smsreader.smslisting.presentation;
 
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import com.rejoyz.smsreader.R;
 import com.rejoyz.smsreader.smslisting.data.Message;
 import com.rejoyz.smsreader.smslisting.utils.Utils;
@@ -18,6 +21,13 @@ import butterknife.ButterKnife;
 public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int TYPE_HEADER = 1;
     List<Message> dataList;
+    private boolean animate;
+    private MessageInterface mMessageInterface;
+
+    public MessagesAdapter(MessageInterface messageInterface) {
+
+        mMessageInterface = messageInterface;
+    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -31,6 +41,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         Message message = dataList.get(position);
@@ -39,7 +50,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             headerViewHolder.bind(message);
         } else {
             ViewHolder viewHolder = (ViewHolder) holder;
-            viewHolder.bind(message);
+            viewHolder.bind(message, animate && position == 1);
         }
     }
 
@@ -53,9 +64,18 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return dataList != null ? dataList.size() : 0;
     }
 
-    public void setMessages(List<Message> messages) {
-        dataList = messages;
-        notifyDataSetChanged();
+    public void setMessages(List<Message> messages, boolean animate) {
+        this.animate = animate;
+        if (dataList == null) {
+            dataList = messages;
+            return;
+        }
+        final MessagesDiffUtilsCallback diffCallback = new MessagesDiffUtilsCallback(this.dataList, messages);
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
+
+        this.dataList.clear();
+        this.dataList.addAll(messages);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -65,16 +85,25 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         TextView tvBody;
         @BindView(R.id.time)
         TextView tvTime;
+        @BindView(R.id.rootview)
+        View root;
 
         ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
 
-        void bind(Message message) {
+        void bind(Message message, boolean anim) {
             tvSender.setText(message.getSender());
             tvBody.setText(message.getBody());
             tvTime.setText(Utils.getMins(message.getDate()));
+            if (anim) {
+                YoYo.with(Techniques.Pulse).delay(600).duration(400).playOn(root);
+            }
+            if (message.getType() == 0)
+                root.setOnClickListener(v -> mMessageInterface.onMessageClicked(message));
+
+
         }
     }
 
@@ -90,6 +119,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void bind(Message message) {
             tvHeader.setText(message.getGroup());
         }
+    }
+
+    public interface MessageInterface {
+        public void onMessageClicked(Message message);
     }
 
 }

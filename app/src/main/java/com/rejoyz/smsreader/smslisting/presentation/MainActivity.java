@@ -3,6 +3,8 @@ package com.rejoyz.smsreader.smslisting.presentation;
 import android.Manifest;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -24,7 +26,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerAppCompatActivity;
 
-public class MainActivity extends DaggerAppCompatActivity {
+public class MainActivity extends DaggerAppCompatActivity implements MessagesAdapter.MessageInterface {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_SMS = 1001;
     private MessageListingViewModel viewModel;
@@ -34,6 +36,7 @@ public class MainActivity extends DaggerAppCompatActivity {
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
     private MessagesAdapter adapter;
+    boolean newMessage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,21 +45,32 @@ public class MainActivity extends DaggerAppCompatActivity {
         ButterKnife.bind(this);
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(MessageListingViewModel.class);
         viewModel.observeOnMessages().observe(this, this::showMessages);
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
             showPermissionRequiredMsg();
             return;
         }
+        if (getIntent().getExtras() != null)
+            newMessage =true;
+
+        viewModel.loadMessages();
+    }
+
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        newMessage = true;
         viewModel.loadMessages();
     }
 
     void showPermissionRequiredMsg() {
         new AlertDialog.Builder(this)
-                .setMessage("Read Message permission is required for the app to function")
+                .setMessage("Read SMS permission is required for the app to function")
                 .setPositiveButton("OK", (dialogInterface, i) -> {
                     dialogInterface.dismiss();
                     ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.READ_SMS},
+                            new String[]{Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS},
                             MY_PERMISSIONS_REQUEST_READ_SMS);
                 })
                 .setNegativeButton("EXIT APP", (dialogInterface, i) -> {
@@ -68,19 +82,20 @@ public class MainActivity extends DaggerAppCompatActivity {
 
     void showMessages(List<Message> list) {
         if (adapter == null) {
-            adapter = new MessagesAdapter();
+            adapter = new MessagesAdapter(this);
             recyclerView.setHasFixedSize(true);
             LinearLayoutManager mlayoutManager = new LinearLayoutManager(this);
             recyclerView.setLayoutManager(mlayoutManager);
             DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
                     mlayoutManager.getOrientation());
             recyclerView.addItemDecoration(dividerItemDecoration);
-            adapter.setMessages(list);
+            adapter.setMessages(list, newMessage);
             recyclerView.setAdapter(adapter);
         } else {
-            adapter.setMessages(list);
+            adapter.setMessages(list, newMessage);
 
         }
+        newMessage = false;
     }
 
     @Override
@@ -107,5 +122,11 @@ public class MainActivity extends DaggerAppCompatActivity {
             // other 'case' lines to check for other
             // permissions this app might request.
         }
+    }
+
+    @Override
+    public void onMessageClicked(Message message) {
+        new AlertDialog.Builder(this).setMessage(message.getBody())
+                .setPositiveButton("OK", (dialogInterface, i) -> dialogInterface.dismiss()).create().show();
     }
 }
