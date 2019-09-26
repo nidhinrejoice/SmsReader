@@ -20,6 +20,20 @@ android {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
     }
+    flavorDimensions "color"
+    productFlavors {
+
+        main {
+            applicationId "com.rejoyz.smsreader"
+            minSdkVersion 21
+            targetSdkVersion 28
+            versionCode 1
+            versionName '1.0'
+            dimension "color"
+            aaptOptions.cruncherEnabled = false
+            testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        }
+    }
 }
 
 dependencies {
