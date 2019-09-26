@@ -14,3 +14,5 @@
 app/release/smsreader.apk
 app/release/output.json
 app/release/app-release.apk
+.idea/vcs.xml
+.idea/codeStyles/Project.xml
