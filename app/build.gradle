@@ -24,11 +24,21 @@ android {
     productFlavors {
 
         devBuild {
-            applicationId "com.forthcode.ngo"
+            applicationId "com.rejoyz.smsreader"
             minSdkVersion 21
             targetSdkVersion 28
-            versionCode 104
-            versionName '3.0devbuild70'
+            versionCode 1
+            versionName '1.0'
+            dimension "color"
+            aaptOptions.cruncherEnabled = false
+            testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        }
+        main {
+            applicationId "com.rejoyz.smsreader"
+            minSdkVersion 21
+            targetSdkVersion 28
+            versionCode 1
+            versionName '1.0'
             dimension "color"
             aaptOptions.cruncherEnabled = false
             testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
